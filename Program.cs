@@ -39,6 +39,9 @@ namespace _Net_Microsoft_Learning
             dotnet_Files.ReadSalesTotalFromJsonFile($"{dotnet_Files.path}{dpc}201{dpc}sales.json");
             dotnet_Files.WriteDataFileToFile($"{dotnet_Files.path}{dpc}201{dpc}sales.json", $"{dotnet_Files.path}{dpc}totals.txt");
             dotnet_Files.AppendDataFileToFile($"{dotnet_Files.path}{dpc}201{dpc}sales.json", $"{dotnet_Files.path}{dpc}totals.txt");
+            dotnet_Files.Exercise_1(Path.Combine(dotnet_Files.path, "totals.txt"));
+            decimal x = 7m / 5m;
+            Console.WriteLine(x);
             #endregion
         }
     }
@@ -54,7 +57,6 @@ public class dotnet_files
     public string path = $"H:{dsc}PL{dsc}_Net_Microsoft_Learning{dsc}Files{dsc}stores";
 
     public string Currect_Directory = Directory.GetCurrentDirectory();
-    //public string path = Path.Combine(Directory.GetCurrentDirectory(), "stores");
     public string Special_Folder_Directory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
     public char Directory_Separator_Char = dsc;
     public string path_comnine = Path.Combine($"H:{dsc}PL{dsc}_Net_Microsoft_Learning{dsc}Files{dsc}stores", "201");
@@ -84,7 +86,7 @@ public class dotnet_files
             Console.WriteLine(file);
         }
     }
-    public void FindFiles(string? folder,string file_name)
+    public void FindFiles(string folder,string file_name)
     {
         IEnumerable<string> foundFiles = Directory.EnumerateFiles(folder,"*",SearchOption.AllDirectories);
         foreach (string file in foundFiles)
@@ -94,6 +96,19 @@ public class dotnet_files
                 Console.WriteLine(file);
             }
         }
+    }
+    public IEnumerable<string> FindFileListOfDirectory(string folder)
+    {
+        List<string> files = new List<string>();
+        IEnumerable<string> foundFiles = Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories);
+        foreach (string file in foundFiles)
+        {            
+            if (Path.GetExtension(file)==".json")
+            {
+                files.Add(file);
+            }            
+        }
+        return files;
     }
     public void GetFileInfo(string? fileName)
     {
@@ -221,6 +236,25 @@ public class dotnet_files
         }
 
         File.AppendAllText(toPath, $"{Environment.NewLine}{data.Total}");
+    }
+    public void Exercise_1(string to_path)
+    {
+        var store_directory = path;
+        var sales_files = FindFileListOfDirectory(store_directory);
+        var sales_total = Calculate_Sales_Total(sales_files);
+
+        File.AppendAllText(to_path,$"{Environment.NewLine}{sales_total}");
+    }
+    public double Calculate_Sales_Total(IEnumerable<string> files)
+    {
+        double sales_total = 0;
+        foreach (var file in files)
+        {
+            string sales_json = File.ReadAllText(file);
+            SalesTotal? sales_data = JsonConvert.DeserializeObject<SalesTotal>(sales_json);
+            sales_total += sales_data?.Total ?? 0;
+        }
+        return sales_total;
     }
 }
 class SalesTotal
